@@ -1,5 +1,6 @@
 from pydantic_settings import BaseSettings
-
+from pydantic import Field
+import os
 
 class Settings(BaseSettings):
     model_config = {"env_prefix": "APP_", "env_file": ".env"}
@@ -19,7 +20,14 @@ class Settings(BaseSettings):
     secret_key: str = "dev-secret-change-in-production"
     access_token_expire_minutes: int = 60
 
-    cors_origins: list[str] = ["http://localhost:5173", "http://localhost:3000"]
+    
+
+    cors_origins: list[str] = Field(
+        default_factory=lambda: os.getenv(
+            "APP_CORS_ORIGINS",
+            "http://localhost:5173,http://localhost:3000",
+        ).split(",")
+    )
 
     rate_limit_anonymous: int = 10
     rate_limit_authenticated: int = 100
@@ -35,6 +43,10 @@ class Settings(BaseSettings):
     ai_model: str = ""
     ai_api_key: str = ""
     ai_base_url: str = ""
+
+    @property
+    def is_production(self) -> bool:
+        return self.environment == "production"
 
 
 settings = Settings()

@@ -67,11 +67,19 @@ async def _check_and_run_schedules() -> None:
 
 
 def _validate_config() -> None:
-    if settings.environment == "production" and settings.secret_key == "dev-secret-change-in-production":
-        logger.critical(
-            "SECRET_KEY is the default value! Set APP_SECRET_KEY for production deployments.",
-        )
-        sys.exit(1)
+    if settings.is_production:
+        if settings.secret_key == "dev-secret-change-in-production":
+            logger.critical(
+                "SECRET_KEY is the default value! Set APP_SECRET_KEY for production deployments.",
+            )
+            sys.exit(1)
+        for origin in settings.cors_origins:
+            if "localhost" in origin or "127.0.0.1" in origin:
+                logger.critical(
+                    "CORS origin %r contains localhost! Set APP_CORS_ORIGINS for production.",
+                    origin,
+                )
+                sys.exit(1)
 
 
 @asynccontextmanager
