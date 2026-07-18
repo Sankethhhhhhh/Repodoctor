@@ -111,7 +111,7 @@ def generate_pdf(report: Report) -> bytes:
     pdf.set_text_color(60, 60, 60)
     if recommendations:
         for i, rec in enumerate(recommendations, 1):
-            msg = rec.get("message", rec.get("recommendation", "")) if isinstance(rec, dict) else str(rec)
+            msg = str(rec.get("message", rec.get("recommendation", ""))) if isinstance(rec, dict) else str(rec)
             if len(msg) > 100:
                 msg = msg[:97] + "..."
             pdf.multi_cell(effective_width, 6, f"{i}. {msg}")

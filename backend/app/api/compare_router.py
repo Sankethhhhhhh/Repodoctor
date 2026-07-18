@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
@@ -29,19 +29,19 @@ class CategoryComparison(BaseModel):
 
 
 class CompareResponse(BaseModel):
-    report_a: dict
-    report_b: dict
+    report_a: dict[str, Any]
+    report_b: dict[str, Any]
     overall_winner: str
     score_difference: float
     category_comparison: list[CategoryComparison]
     improvement_suggestions: list[str]
 
 
-def _get_simple_report(report: object) -> dict:
+def _get_simple_report(report: object) -> dict[str, Any]:
     from app.models.models import Report as ReportModel
 
     assert isinstance(report, ReportModel)
-    cats = json.loads(report.category_breakdown) if report.category_breakdown else []
+    cats: list[dict[str, Any]] = json.loads(report.category_breakdown) if report.category_breakdown else []
     return {
         "id": str(report.id),
         "repo_name": report.repo_full_name,
@@ -90,23 +90,27 @@ async def compare_reports(
     simple_a = _get_simple_report(report_a)
     simple_b = _get_simple_report(report_b)
 
-    winner = "A" if simple_a["score"] > simple_b["score"] else ("B" if simple_b["score"] > simple_a["score"] else "Tie")
+    score_a = float(simple_a["score"])
+    score_b = float(simple_b["score"])
+    winner = "A" if score_a > score_b else ("B" if score_b > score_a else "Tie")
 
-    categories_a = {c["name"]: c for c in simple_a["categories"]}
-    categories_b = {c["name"]: c for c in simple_b["categories"]}
+    categories_a: dict[str, dict[str, Any]] = {str(c["name"]): c for c in simple_a["categories"]}
+    categories_b: dict[str, dict[str, Any]] = {str(c["name"]): c for c in simple_b["categories"]}
     all_names = list(dict.fromkeys(list(categories_a.keys()) + list(categories_b.keys())))
 
     cat_comparison = []
     for name in all_names:
         ca = categories_a.get(name, {"score": 0, "max_score": 0})
         cb = categories_b.get(name, {"score": 0, "max_score": 0})
-        cat_winner = "A" if ca["score"] > cb["score"] else ("B" if cb["score"] > ca["score"] else "Tie")
+        ca_score = float(ca["score"])
+        cb_score = float(cb["score"])
+        cat_winner = "A" if ca_score > cb_score else ("B" if cb_score > ca_score else "Tie")
         cat_comparison.append(
             CategoryComparison(
                 name=name,
-                score_a=ca["score"],
-                score_b=cb["score"],
-                max_score=max(ca["max_score"], cb["max_score"]),
+                score_a=ca_score,
+                score_b=cb_score,
+                max_score=max(float(ca["max_score"]), float(cb["max_score"])),
                 winner=cat_winner,
             )
         )
@@ -117,7 +121,7 @@ async def compare_reports(
         report_a=simple_a,
         report_b=simple_b,
         overall_winner=winner,
-        score_difference=abs(simple_a["score"] - simple_b["score"]),
+        score_difference=abs(score_a - score_b),
         category_comparison=cat_comparison,
         improvement_suggestions=suggestions,
     )

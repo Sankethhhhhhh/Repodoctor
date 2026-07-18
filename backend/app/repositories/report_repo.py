@@ -77,9 +77,9 @@ class ReportRepository:
         commit_sha: str,
         score: int,
         grade: str,
-        category_breakdown: dict,
-        rules: list[dict],
-        recommendations: list[dict],
+        category_breakdown: dict[str, object],
+        rules: list[dict[str, object]],
+        recommendations: list[str],
         user_id: str | None = None,
     ) -> Report:
         report = Report(

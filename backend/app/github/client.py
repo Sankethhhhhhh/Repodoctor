@@ -117,7 +117,8 @@ class GitHubClient:
         return response.text
 
     async def get_repository(self, owner: str, repo: str) -> dict[str, Any]:
-        return await self._get(f"/repos/{owner}/{repo}")
+        result: dict[str, Any] = await self._get(f"/repos/{owner}/{repo}")
+        return result
 
     async def get_readme(self, owner: str, repo: str) -> str | None:
         try:
@@ -141,24 +142,28 @@ class GitHubClient:
 
     async def get_tree(self, owner: str, repo: str, sha: str = "HEAD") -> list[dict[str, Any]]:
         try:
-            data = await self._get(f"/repos/{owner}/{repo}/git/trees/{sha}?recursive=1")
-            return data.get("tree", [])
+            data: dict[str, Any] = await self._get(f"/repos/{owner}/{repo}/git/trees/{sha}?recursive=1")
+            tree: list[dict[str, Any]] = data.get("tree", [])
+            return tree
         except GitHubError:
             return []
 
     async def get_commits(self, owner: str, repo: str, limit: int = 100) -> list[dict[str, Any]]:
-        return await self._get(f"/repos/{owner}/{repo}/commits?per_page={limit}")
+        result: list[dict[str, Any]] = await self._get(f"/repos/{owner}/{repo}/commits?per_page={limit}")
+        return result
 
     async def get_workflows(self, owner: str, repo: str) -> list[dict[str, Any]]:
         try:
-            data = await self._get(f"/repos/{owner}/{repo}/actions/workflows")
-            return data.get("workflows", [])
+            data: dict[str, Any] = await self._get(f"/repos/{owner}/{repo}/actions/workflows")
+            workflows: list[dict[str, Any]] = data.get("workflows", [])
+            return workflows
         except GitHubError:
             return []
 
     async def get_license(self, owner: str, repo: str) -> dict[str, Any] | None:
         try:
-            return await self._get(f"/repos/{owner}/{repo}/license")
+            result: dict[str, Any] = await self._get(f"/repos/{owner}/{repo}/license")
+            return result
         except GitHubNotFoundError:
             return None
         except GitHubError:
@@ -166,7 +171,8 @@ class GitHubClient:
 
     async def get_releases(self, owner: str, repo: str) -> list[dict[str, Any]]:
         try:
-            return await self._get(f"/repos/{owner}/{repo}/releases?per_page=10")
+            result: list[dict[str, Any]] = await self._get(f"/repos/{owner}/{repo}/releases?per_page=10")
+            return result
         except GitHubNotFoundError:
             return []
         except GitHubError:

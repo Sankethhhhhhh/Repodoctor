@@ -10,11 +10,11 @@ logger = logging.getLogger(__name__)
 
 class CacheService:
     def __init__(self) -> None:
-        self._redis = None
+        self._redis: Any = None
         self._memory: dict[str, str] = {}
         self._initialized = False
 
-    async def _get_redis(self):  # type: ignore[no-untyped-def]
+    async def _get_redis(self) -> Any:
         if self._initialized:
             return self._redis
 
@@ -85,7 +85,7 @@ class CacheService:
         redis = await self._get_redis()
         if redis:
             try:
-                count = await redis.incr(key)
+                count: int = await redis.incr(key)
                 if count == 1:
                     await redis.expire(key, ttl)
                 return count

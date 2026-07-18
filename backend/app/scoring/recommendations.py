@@ -1,3 +1,5 @@
+from typing import Any
+
 from app.scoring.pipeline import ScoringResult
 
 
@@ -12,7 +14,7 @@ class Recommendation:
         self.title = title
         self.estimated_score_gain = estimated_score_gain
 
-    def to_dict(self) -> dict[str, object]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "priority": self.priority,
             "title": self.title,

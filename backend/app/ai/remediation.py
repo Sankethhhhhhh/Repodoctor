@@ -42,7 +42,7 @@ Failed Rules:
 Provide a JSON response with remediations for each failed rule."""
 
 
-def _build_prompt(report: Report, failed_rules: list[dict]) -> str:
+def _build_prompt(report: Report, failed_rules: list[dict[str, object]]) -> str:
     rule_lines = []
     for rule in failed_rules:
         parts = [
@@ -60,8 +60,8 @@ def _build_prompt(report: Report, failed_rules: list[dict]) -> str:
     )
 
 
-async def generate_remediation(report: Report) -> dict:
-    rules_data = json.loads(report.rules) if report.rules else []
+async def generate_remediation(report: Report) -> dict[str, object]:
+    rules_data: list[dict[str, object]] = json.loads(report.rules) if report.rules else []
     failed_rules = [r for r in rules_data if not r.get("passed", True)]
 
     if not failed_rules:
@@ -72,7 +72,8 @@ async def generate_remediation(report: Report) -> dict:
 
     try:
         response_text = await provider.generate(prompt, system=SYSTEM_PROMPT)
-        return json.loads(response_text)
+        result: dict[str, object] = json.loads(response_text)
+        return result
     except json.JSONDecodeError:
         return {"remediations": [], "raw_response": response_text}
     except Exception:

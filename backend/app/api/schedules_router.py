@@ -57,8 +57,8 @@ async def create_schedule(
     days = FREQUENCIES[request.frequency]
     next_run = datetime.now(UTC) + timedelta(days=days)
 
-    repo = ScheduleRepository(db)
-    schedule = await repo.create(
+    schedule_repo = ScheduleRepository(db)
+    schedule = await schedule_repo.create(
         repo_full_name=repo_full_name,
         repo_url=repo_url,
         frequency=request.frequency,

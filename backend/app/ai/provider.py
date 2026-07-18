@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import logging
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
-
-from app.config import settings
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator
+
+from app.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +17,7 @@ class AIProvider(ABC):
     async def generate(self, prompt: str, system: str = "") -> str: ...
 
     @abstractmethod
-    async def generate_stream(self, prompt: str, system: str = "") -> AsyncIterator[str]: ...
+    def generate_stream(self, prompt: str, system: str = "") -> AsyncIterator[str]: ...
 
 
 class OpenAIProvider(AIProvider):
@@ -29,7 +29,7 @@ class OpenAIProvider(AIProvider):
     async def generate(self, prompt: str, system: str = "") -> str:
         import httpx
 
-        messages = []
+        messages: list[dict[str, str]] = []
         if system:
             messages.append({"role": "system", "content": system})
         messages.append({"role": "user", "content": prompt})
@@ -42,11 +42,15 @@ class OpenAIProvider(AIProvider):
                 timeout=60.0,
             )
             response.raise_for_status()
-            return response.json()["choices"][0]["message"]["content"]
+            data: dict[str, Any] = response.json()
+            return str(data["choices"][0]["message"]["content"])
 
-    async def generate_stream(self, prompt: str, system: str = "") -> AsyncIterator[str]:
+    async def _generate_stream(self, prompt: str, system: str = "") -> AsyncIterator[str]:
         text = await self.generate(prompt, system)
         yield text
+
+    def generate_stream(self, prompt: str, system: str = "") -> AsyncIterator[str]:
+        return self._generate_stream(prompt, system)
 
 
 class AnthropicProvider(AIProvider):
@@ -77,11 +81,15 @@ class AnthropicProvider(AIProvider):
                 timeout=60.0,
             )
             response.raise_for_status()
-            return response.json()["content"][0]["text"]
+            data: dict[str, Any] = response.json()
+            return str(data["content"][0]["text"])
 
-    async def generate_stream(self, prompt: str, system: str = "") -> AsyncIterator[str]:
+    async def _generate_stream(self, prompt: str, system: str = "") -> AsyncIterator[str]:
         text = await self.generate(prompt, system)
         yield text
+
+    def generate_stream(self, prompt: str, system: str = "") -> AsyncIterator[str]:
+        return self._generate_stream(prompt, system)
 
 
 class OllamaProvider(AIProvider):
@@ -92,7 +100,7 @@ class OllamaProvider(AIProvider):
     async def generate(self, prompt: str, system: str = "") -> str:
         import httpx
 
-        messages = []
+        messages: list[dict[str, str]] = []
         if system:
             messages.append({"role": "system", "content": system})
         messages.append({"role": "user", "content": prompt})
@@ -104,12 +112,13 @@ class OllamaProvider(AIProvider):
                 timeout=120.0,
             )
             response.raise_for_status()
-            return response.json()["message"]["content"]
+            data: dict[str, Any] = response.json()
+            return str(data["message"]["content"])
 
-    async def generate_stream(self, prompt: str, system: str = "") -> AsyncIterator[str]:
+    async def _generate_stream(self, prompt: str, system: str = "") -> AsyncIterator[str]:
         import httpx
 
-        messages = []
+        messages: list[dict[str, str]] = []
         if system:
             messages.append({"role": "system", "content": system})
         messages.append({"role": "user", "content": prompt})
@@ -127,17 +136,27 @@ class OllamaProvider(AIProvider):
 
             async for line in response.aiter_lines():
                 if line:
-                    data = json.loads(line)
+                    data: dict[str, Any] = json.loads(line)
                     if "message" in data:
-                        yield data["message"].get("content", "")
+                        msg = data["message"]
+                        if isinstance(msg, dict):
+                            content = msg.get("content", "")
+                            if isinstance(content, str):
+                                yield content
+
+    def generate_stream(self, prompt: str, system: str = "") -> AsyncIterator[str]:
+        return self._generate_stream(prompt, system)
 
 
 class NoOpProvider(AIProvider):
     async def generate(self, _prompt: str, _system: str = "") -> str:
         return "AI remediation is not configured. Set APP_AI_PROVIDER, APP_AI_MODEL, and APP_AI_API_KEY to enable."
 
-    async def generate_stream(self, _prompt: str, _system: str = "") -> AsyncIterator[str]:
+    async def _generate_stream(self, _prompt: str, _system: str = "") -> AsyncIterator[str]:
         yield await self.generate(_prompt, _system)
+
+    def generate_stream(self, _prompt: str, _system: str = "") -> AsyncIterator[str]:
+        return self._generate_stream(_prompt, _system)
 
 
 def get_provider() -> AIProvider:

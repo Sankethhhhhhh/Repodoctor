@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from enum import StrEnum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from app.github.schemas import GitHubRepositoryData
@@ -38,7 +38,7 @@ class RuleResult:
         self.severity = severity
         self.documentation = documentation
 
-    def to_dict(self) -> dict[str, object]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "id": self.rule_id,
             "category": self.category.value,

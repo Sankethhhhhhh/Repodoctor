@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
@@ -19,7 +19,7 @@ remediation_router = APIRouter(prefix="/reports", tags=["remediation"])
 
 
 class RemediationResponse(BaseModel):
-    remediations: list[dict]
+    remediations: list[dict[str, Any]]
     message: str = ""
     raw_response: str = ""
     error: str = ""
@@ -50,4 +50,13 @@ async def get_remediation(
         return NoRemediationResponse(message="All rules passed — no remediation needed.")
 
     result = await generate_remediation(report)
-    return RemediationResponse(**result)
+    remediations = result.get("remediations", [])
+    message = str(result.get("message", ""))
+    raw_response = str(result.get("raw_response", ""))
+    error = str(result.get("error", ""))
+    return RemediationResponse(
+        remediations=remediations if isinstance(remediations, list) else [],
+        message=message,
+        raw_response=raw_response,
+        error=error,
+    )

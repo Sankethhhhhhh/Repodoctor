@@ -34,9 +34,9 @@ class Report(Base):
     commit_sha: Mapped[str] = mapped_column(String(40), index=True)
     score: Mapped[int] = mapped_column(Integer)
     grade: Mapped[str] = mapped_column(String(2))
-    category_breakdown: Mapped[dict] = mapped_column(Text)
-    rules: Mapped[list] = mapped_column(Text, default="[]")
-    recommendations: Mapped[list] = mapped_column(Text, default="[]")
+    category_breakdown: Mapped[str] = mapped_column(Text, default="{}")
+    rules: Mapped[str] = mapped_column(Text, default="[]")
+    recommendations: Mapped[str] = mapped_column(Text, default="[]")
     user_id: Mapped[str | None] = mapped_column(
         String(36),
         ForeignKey("users.id", ondelete="SET NULL"),

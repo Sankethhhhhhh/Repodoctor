@@ -18,7 +18,7 @@ from app.logging_config import setup_logging
 
 logger = logging.getLogger(__name__)
 
-_scheduler_task: asyncio.Task | None = None
+_scheduler_task: asyncio.Task[None] | None = None
 
 
 async def _scheduler_loop() -> None:

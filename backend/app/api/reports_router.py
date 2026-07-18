@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import logging
 import time
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
@@ -42,17 +42,16 @@ def _get_report_service(
     return ReportService(github_service=github_service, report_repo=report_repo)
 
 
-def _build_report_response(report: object) -> ReportResponse:
-    from app.models.models import Report as ReportModel
-
-    assert isinstance(report, ReportModel)
-    categories_data = json.loads(report.category_breakdown) if report.category_breakdown else []
-    rules_data = json.loads(report.rules) if report.rules else []
-    recommendations_raw = json.loads(report.recommendations) if report.recommendations else []
+def _build_report_response(report: ReportModel) -> ReportResponse:
+    categories_data: list[dict[str, Any]] = json.loads(report.category_breakdown) if report.category_breakdown else []
+    rules_data: list[dict[str, Any]] = json.loads(report.rules) if report.rules else []
+    recommendations_raw: list[Any] = json.loads(report.recommendations) if report.recommendations else []
 
     categories = []
     for c in categories_data:
         details = c.get("details", [])
+        if not isinstance(details, list):
+            details = []
         structured_details = []
         for d in details:
             if isinstance(d, dict):
@@ -67,9 +66,9 @@ def _build_report_response(report: object) -> ReportResponse:
                 )
         categories.append(
             CategoryScore(
-                name=c["name"],
-                score=c["score"],
-                max_score=c["max_score"],
+                name=str(c.get("name", "")),
+                score=float(c.get("score", 0)),
+                max_score=float(c.get("max_score", 0)),
                 details=structured_details,
             )
         )
@@ -99,11 +98,13 @@ def _build_report_response(report: object) -> ReportResponse:
         categories_failed=categories_failed,
     )
 
-    recommendations = []
+    recommendations: list[str] = []
     if isinstance(recommendations_raw, list):
         for r in recommendations_raw:
             if isinstance(r, dict):
-                recommendations.append(r.get("message", r.get("recommendation", "")))
+                msg = r.get("message", r.get("recommendation", ""))
+                if isinstance(msg, str):
+                    recommendations.append(msg)
             elif isinstance(r, str):
                 recommendations.append(r)
     recommendations = deduplicate_recommendations(recommendations)

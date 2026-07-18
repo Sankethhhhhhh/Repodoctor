@@ -57,7 +57,7 @@ class AuthService:
                 logger.error("GitHub OAuth response missing token")
                 raise ValueError("GitHub OAuth response missing token")
 
-            return data["access_token"]
+            return str(data["access_token"])
 
     async def get_github_user(self, token: str) -> GitHubUser:
         async with httpx.AsyncClient() as client:

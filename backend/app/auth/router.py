@@ -74,7 +74,7 @@ def settings_cookie_max_age() -> int:
 @auth_router.get("/me")
 async def get_me(
     current_user: TokenPayload = Depends(get_current_user),
-) -> dict:
+) -> dict[str, object]:
     return {
         "success": True,
         "data": {

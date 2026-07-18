@@ -50,8 +50,10 @@ class DebugInfo(BaseModel):
     rules_evaluated: int = Field(description="Total number of rules evaluated")
     github_files_inspected: int = Field(description="Number of files in the repository tree")
     github_api_calls: list[str] = Field(default_factory=list, description="GitHub API endpoints called")
-    scoring_details: list[dict] = Field(default_factory=list, description="Per-rule scoring details with points")
-    repo_metadata: dict = Field(default_factory=dict, description="Repository metadata used in analysis")
+    scoring_details: list[dict[str, object]] = Field(
+        default_factory=list, description="Per-rule scoring details with points"
+    )
+    repo_metadata: dict[str, object] = Field(default_factory=dict, description="Repository metadata used in analysis")
 
 
 class ReportResponse(BaseModel):

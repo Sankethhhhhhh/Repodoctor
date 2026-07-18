@@ -1,7 +1,9 @@
 import logging
+from typing import Any
 
 from app.cache.service import cache_service
 from app.github.service import GitHubService, parse_repo_url
+from app.models.models import Report as ReportModel
 from app.repositories.report_repo import ReportRepository
 from app.scoring.pipeline import ScoringResult, run_scoring
 
@@ -14,7 +16,7 @@ def build_repo_url(owner: str, repo: str) -> str:
     return f"{GITHUB_BASE_URL}/{owner}/{repo}"
 
 
-def compute_summary(result: ScoringResult) -> dict[str, int]:
+def compute_summary(result: ScoringResult) -> dict[str, Any]:
     total_rules = len(result.rules)
     passed_rules = sum(1 for r in result.rules if r.passed)
     failed_rules = total_rules - passed_rules
@@ -55,7 +57,7 @@ class ReportService:
         self.github = github_service
         self.report_repo = report_repo
 
-    async def analyze(self, url: str) -> object:
+    async def analyze(self, url: str) -> ReportModel:
         owner, repo = parse_repo_url(url)
 
         logger.info("Fetching repository data for %s/%s", owner, repo)
@@ -86,9 +88,9 @@ class ReportService:
             repo_full_name=repo_data.repo.full_name,
             repo_url=repo_url,
             commit_sha=latest_sha or "head",
-            score=result_dict["score"],
-            grade=result_dict["grade"],
-            category_breakdown=category_breakdown,
+            score=round(float(result_dict["score"])),
+            grade=str(result_dict["grade"]),
+            category_breakdown=dict(category_breakdown) if isinstance(category_breakdown, dict) else {},
             rules=rules_data,
             recommendations=recommendations,
         )

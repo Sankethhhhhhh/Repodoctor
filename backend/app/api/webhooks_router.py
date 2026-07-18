@@ -101,14 +101,11 @@ def _verify_signature(body: bytes, signature: str) -> bool:
     return hmac.compare_digest(expected, signature)
 
 
-def _extract_repo_name(payload: dict, event: str) -> str | None:
-    if event == "push":
+def _extract_repo_name(payload: dict[str, object], event: str) -> str | None:
+    if event in ("push", "pull_request", "release"):
         repo = payload.get("repository", {})
-        return repo.get("full_name")
-    if event == "pull_request":
-        repo = payload.get("repository", {})
-        return repo.get("full_name")
-    if event == "release":
-        repo = payload.get("repository", {})
-        return repo.get("full_name")
+        if isinstance(repo, dict):
+            full_name = repo.get("full_name")
+            if isinstance(full_name, str):
+                return full_name
     return None

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from app.scoring.cicd import CI_CD_RULES
 from app.scoring.documentation import DOCUMENTATION_RULES
@@ -33,14 +33,14 @@ class CategoryScore:
         name: str,
         score: int,
         max_score: int,
-        details: list[dict[str, object]] | None = None,
+        details: list[dict[str, Any]] | None = None,
     ) -> None:
         self.name = name
         self.score = score
         self.max_score = max_score
         self.details = details or []
 
-    def to_dict(self) -> dict[str, object]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "name": self.name,
             "score": self.score,
@@ -62,7 +62,7 @@ class ScoringResult:
         self.categories = categories
         self.rules = rules
 
-    def to_dict(self) -> dict[str, object]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "score": self.overall_score,
             "grade": self.grade,
