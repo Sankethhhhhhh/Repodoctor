@@ -1,7 +1,11 @@
 from __future__ import annotations
 
-from app.github.schemas import GitHubRepositoryData
+from typing import TYPE_CHECKING
+
 from app.scoring.rule import Category, Rule, RuleResult
+
+if TYPE_CHECKING:
+    from app.github.schemas import GitHubRepositoryData
 
 
 class GitHubActionsRule(Rule):
@@ -28,9 +32,22 @@ class BuildWorkflowRule(Rule):
 
     def evaluate(self, data: GitHubRepositoryData) -> RuleResult:
         build_keywords = [
-            "build", "compile", "make", "ci", "continuous-integration",
-            "check", "validate", "verify", "pr", "merge", "quality",
-            "release", "deploy", "test", "lint", "workflow",
+            "build",
+            "compile",
+            "make",
+            "ci",
+            "continuous-integration",
+            "check",
+            "validate",
+            "verify",
+            "pr",
+            "merge",
+            "quality",
+            "release",
+            "deploy",
+            "test",
+            "lint",
+            "workflow",
         ]
         for workflow in data.workflows:
             name = (workflow.name or "").lower()
@@ -39,9 +56,7 @@ class BuildWorkflowRule(Rule):
             if any(kw in combined for kw in build_keywords):
                 return self._pass(f"Build/CI workflow found: {workflow.path}")
         if data.workflows:
-            return self._pass(
-                f"GitHub Actions configured ({len(data.workflows)} workflows present)"
-            )
+            return self._pass(f"GitHub Actions configured ({len(data.workflows)} workflows present)")
         return self._fail(
             "No build or CI workflow found",
             "Add a CI workflow that builds and validates your project",
@@ -56,11 +71,29 @@ class LintWorkflowRule(Rule):
 
     def evaluate(self, data: GitHubRepositoryData) -> RuleResult:
         lint_keywords = [
-            "lint", "format", "check", "style", "quality",
-            "flake8", "ruff", "eslint", "prettier", "clippy",
-            "deny", "audit", "swiftlint", "rubocop", "mypy",
-            "pyright", "tsc", "biome", "oxlint", "typecheck", "type-check",
-            "validate", "verify",
+            "lint",
+            "format",
+            "check",
+            "style",
+            "quality",
+            "flake8",
+            "ruff",
+            "eslint",
+            "prettier",
+            "clippy",
+            "deny",
+            "audit",
+            "swiftlint",
+            "rubocop",
+            "mypy",
+            "pyright",
+            "tsc",
+            "biome",
+            "oxlint",
+            "typecheck",
+            "type-check",
+            "validate",
+            "verify",
         ]
         for workflow in data.workflows:
             name = (workflow.name or "").lower()
@@ -82,9 +115,19 @@ class DeployWorkflowRule(Rule):
 
     def evaluate(self, data: GitHubRepositoryData) -> RuleResult:
         deploy_keywords = [
-            "deploy", "release", "publish", "ship", "cdn",
-            "pages", "vercel", "netlify", "nightly", "canary",
-            "tag", "draft", "pre-release",
+            "deploy",
+            "release",
+            "publish",
+            "ship",
+            "cdn",
+            "pages",
+            "vercel",
+            "netlify",
+            "nightly",
+            "canary",
+            "tag",
+            "draft",
+            "pre-release",
         ]
         for workflow in data.workflows:
             name = (workflow.name or "").lower()

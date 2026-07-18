@@ -1,7 +1,11 @@
 from __future__ import annotations
 
-from app.github.schemas import GitHubRepositoryData
+from typing import TYPE_CHECKING
+
 from app.scoring.rule import Category, Rule, RuleResult
+
+if TYPE_CHECKING:
+    from app.github.schemas import GitHubRepositoryData
 
 TEST_DIR_PATTERNS = ["tests", "test", "spec", "__tests__", "test_"]
 TEST_FILE_PATTERNS = ["_test.", ".test.", "_spec.", ".spec.", "test_"]
@@ -99,13 +103,13 @@ class TestFrameworkRule(Rule):
                         return self._pass("Test framework detected: Maven (pom.xml present)")
                     elif framework == "dotnet_test":
                         for p in file_paths:
-                            if p.endswith(".csproj") or p.endswith(".sln"):
+                            if p.endswith((".csproj", ".sln")):
                                 return self._pass(f"Test framework detected: .NET ({p})")
                     elif framework == "phpunit":
                         return self._pass("Test framework detected: PHPUnit (phpunit.xml present)")
                     elif framework == "rspec":
                         for p in file_paths:
-                            if p.endswith("_test.rb") or p.endswith("_spec.rb") or "spec/" in p:
+                            if p.endswith(("_test.rb", "_spec.rb")) or "spec/" in p:
                                 return self._pass("Test framework detected: Ruby RSpec/Minitest")
                     else:
                         return self._pass(f"Test framework detected: {framework}")
@@ -113,7 +117,7 @@ class TestFrameworkRule(Rule):
         for path in file_paths:
             parts = path.lower().split("/")
             if "__tests__" in parts:
-                return self._pass(f"Test framework detected: Jest (__tests__/ directory found)")
+                return self._pass("Test framework detected: Jest (__tests__/ directory found)")
 
         has_test_files = False
         has_py_test_files = False
@@ -131,9 +135,7 @@ class TestFrameworkRule(Rule):
                         has_test_files = True
                         break
             basename = path.rsplit("/", 1)[-1]
-            if (basename.startswith("test_") and basename.endswith(".py")) or (
-                basename.endswith("_test.py")
-            ):
+            if (basename.startswith("test_") and basename.endswith(".py")) or (basename.endswith("_test.py")):
                 has_py_test_files = True
 
         if has_test_files and "pyproject.toml" in file_paths:
@@ -186,9 +188,21 @@ class CITestWorkflowRule(Rule):
             )
 
         test_keywords = [
-            "test", "pytest", "jest", "vitest", "spec", "mocha",
-            "cargo test", "go test", "unit", "integration", "e2e",
-            "smoke", "regression", "coverage", "check",
+            "test",
+            "pytest",
+            "jest",
+            "vitest",
+            "spec",
+            "mocha",
+            "cargo test",
+            "go test",
+            "unit",
+            "integration",
+            "e2e",
+            "smoke",
+            "regression",
+            "coverage",
+            "check",
         ]
         for workflow in data.workflows:
             name = (workflow.name or "").lower()

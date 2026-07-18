@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from app.github.schemas import GitHubRepositoryData
+from typing import TYPE_CHECKING
+
 from app.scoring.cicd import CI_CD_RULES
 from app.scoring.documentation import DOCUMENTATION_RULES
 from app.scoring.git_hygiene import GIT_HYGIENE_RULES
@@ -8,6 +9,9 @@ from app.scoring.licensing import LICENSING_RULES
 from app.scoring.rule import Category, Rule, RuleResult
 from app.scoring.security import SECURITY_RULES
 from app.scoring.testing import TESTING_RULES
+
+if TYPE_CHECKING:
+    from app.github.schemas import GitHubRepositoryData
 
 ALL_RULES: list[Rule] = (
     DOCUMENTATION_RULES + TESTING_RULES + CI_CD_RULES + GIT_HYGIENE_RULES + LICENSING_RULES + SECURITY_RULES

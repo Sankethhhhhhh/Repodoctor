@@ -60,14 +60,19 @@ class ReportService:
 
         logger.info("Fetching repository data for %s/%s", owner, repo)
         repo_data = await self.github.fetch_repository_data(owner, repo)
-        logger.info("Fetched %d files, %d commits, %d workflows for %s/%s",
-                     len(repo_data.tree), len(repo_data.commits), len(repo_data.workflows), owner, repo)
+        logger.info(
+            "Fetched %d files, %d commits, %d workflows for %s/%s",
+            len(repo_data.tree),
+            len(repo_data.commits),
+            len(repo_data.workflows),
+            owner,
+            repo,
+        )
 
         logger.info("Running scoring engine for %s/%s", owner, repo)
         result = run_scoring(repo_data)
         result_dict = result.to_dict()
-        logger.info("Scoring complete for %s/%s: score=%s grade=%s",
-                     owner, repo, result.overall_score, result.grade)
+        logger.info("Scoring complete for %s/%s: score=%s grade=%s", owner, repo, result.overall_score, result.grade)
 
         category_breakdown = result_dict["categories"]
         rules_data = [r.to_dict() for r in result.rules]

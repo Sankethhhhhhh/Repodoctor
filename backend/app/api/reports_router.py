@@ -172,7 +172,14 @@ async def analyze_repo(
         ) from e
 
     elapsed = time.monotonic() - start
-    logger.info("Analysis completed for %s/%s in %.1fs (score=%s, grade=%s)", owner, repo, elapsed, report.score, report.grade)
+    logger.info(
+        "Analysis completed for %s/%s in %.1fs (score=%s, grade=%s)",
+        owner,
+        repo,
+        elapsed,
+        report.score,
+        report.grade,
+    )
     return _build_report_response(report)
 
 
@@ -228,19 +235,29 @@ async def get_report(
         scoring_details = []
         for cat in categories_data:
             for detail in cat.get("details", []):
-                scoring_details.append({
-                    "rule": detail.get("rule", ""),
-                    "status": detail.get("status", ""),
-                    "points": detail.get("points", 0),
-                    "max_points": detail.get("max_points", 0),
-                    "evidence": detail.get("evidence", ""),
-                    "severity": detail.get("severity", ""),
-                })
+                scoring_details.append(
+                    {
+                        "rule": detail.get("rule", ""),
+                        "status": detail.get("status", ""),
+                        "points": detail.get("points", 0),
+                        "max_points": detail.get("max_points", 0),
+                        "evidence": detail.get("evidence", ""),
+                        "severity": detail.get("severity", ""),
+                    }
+                )
 
         response.debug = DebugInfo(
             rules_evaluated=len(rules_data),
             github_files_inspected=files_count,
-            github_api_calls=["GET /repos/{owner}/{repo}", "GET /repos/{owner}/{repo}/readme", "GET /repos/{owner}/{repo}/git/trees/{sha}", "GET /repos/{owner}/{repo}/commits", "GET /repos/{owner}/{repo}/actions/workflows", "GET /repos/{owner}/{repo}/license", "GET /repos/{owner}/{repo}/releases"],
+            github_api_calls=[
+                "GET /repos/{owner}/{repo}",
+                "GET /repos/{owner}/{repo}/readme",
+                "GET /repos/{owner}/{repo}/git/trees/{sha}",
+                "GET /repos/{owner}/{repo}/commits",
+                "GET /repos/{owner}/{repo}/actions/workflows",
+                "GET /repos/{owner}/{repo}/license",
+                "GET /repos/{owner}/{repo}/releases",
+            ],
             scoring_details=scoring_details,
             repo_metadata={
                 "repo_name": report.repo_full_name,

@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import re
+from typing import TYPE_CHECKING
 
-from app.github.schemas import GitHubRepositoryData
 from app.scoring.rule import Category, Rule, RuleResult
+
+if TYPE_CHECKING:
+    from app.github.schemas import GitHubRepositoryData
 
 SECRET_FILE_PATTERNS = [
     r"\.env$",
@@ -99,9 +102,21 @@ class GitignoreCoverageRule(Rule):
             )
 
         test_dir_parts = {
-            "tests", "test", "spec", "__tests__", "test_apps", "test_fixtures",
-            "fixtures", "examples", "example", "demo", "demos",
-            "testdata", "test_data", "vendor", "third_party",
+            "tests",
+            "test",
+            "spec",
+            "__tests__",
+            "test_apps",
+            "test_fixtures",
+            "fixtures",
+            "examples",
+            "example",
+            "demo",
+            "demos",
+            "testdata",
+            "test_data",
+            "vendor",
+            "third_party",
         }
         tree_paths = {item.path for item in data.tree}
         tree_basenames = {item.path.rsplit("/", 1)[-1] for item in data.tree}
@@ -131,9 +146,7 @@ class GitignoreCoverageRule(Rule):
         if not found_in_tree:
             return self._pass("No common ignored items found in tracked files — .gitignore appears effective")
         if len(found_in_tree) == 1:
-            return self._pass(
-                f".gitignore mostly effective, but {found_in_tree[0]} found in tracked files"
-            )
+            return self._pass(f".gitignore mostly effective, but {found_in_tree[0]} found in tracked files")
         return self._fail(
             f"Common ignored items found in tracked files: {', '.join(found_in_tree[:5])}",
             f"Add these to .gitignore: {', '.join(found_in_tree[:5])}",
@@ -152,13 +165,31 @@ class SecretPatternsRule(Rule):
 
     def evaluate(self, data: GitHubRepositoryData) -> RuleResult:
         test_dir_parts = {
-            "tests", "test", "spec", "__tests__", "test_apps", "test_fixtures",
-            "fixtures", "examples", "example", "demo", "demos",
-            "testdata", "test_data", "test_data", "testdata",
+            "tests",
+            "test",
+            "spec",
+            "__tests__",
+            "test_apps",
+            "test_fixtures",
+            "fixtures",
+            "examples",
+            "example",
+            "demo",
+            "demos",
+            "testdata",
+            "test_data",
         }
         docs_lib_parts = {
-            "doc", "docs", "documentation", "lib", "libs", "library",
-            "vendor", "node_modules", "third_party", "external",
+            "doc",
+            "docs",
+            "documentation",
+            "lib",
+            "libs",
+            "library",
+            "vendor",
+            "node_modules",
+            "third_party",
+            "external",
         }
         secrets_found: list[str] = []
         for item in data.tree:

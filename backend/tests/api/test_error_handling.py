@@ -4,15 +4,15 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from httpx import AsyncClient
+
+from app.api.reports_router import ReportService, _get_report_service
 from app.github.client import (
     GitHubClient,
     GitHubError,
     GitHubNotFoundError,
     GitHubRateLimitError,
 )
-from app.github.service import GitHubService
 from app.main import app
-from app.api.reports_router import _get_report_service, ReportService
 
 
 class TestGitHubClientTokenResolution:
@@ -64,6 +64,7 @@ def _make_failing_service(exc: Exception) -> MagicMock:
 def _override_with_mock(service: MagicMock):
     async def _override():
         return service
+
     return _override
 
 
@@ -366,8 +367,8 @@ class TestServiceResilience:
         with pytest.raises(ValueError, match="Invalid repository URL"):
             parse_repo_url("")
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Invalid repository URL"):
             parse_repo_url("https://not-github.com/repo")
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Invalid repository URL"):
             parse_repo_url("just some random text")

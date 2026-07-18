@@ -125,10 +125,7 @@ class Rule(ABC):
     @staticmethod
     def _dir_exists(tree_dirs: set[str], target: str) -> bool:
         target_lower = target.lower().rstrip("/")
-        for d in tree_dirs:
-            if d.lower().rstrip("/") == target_lower:
-                return True
-        return False
+        return any(d.lower().rstrip("/") == target_lower for d in tree_dirs)
 
     @staticmethod
     def _has_file_under(file_paths: set[str], prefix: str) -> str | None:

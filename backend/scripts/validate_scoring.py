@@ -8,7 +8,6 @@ from app.github.client import GitHubClient
 from app.github.service import GitHubService
 from app.scoring.pipeline import run_scoring
 
-
 REPOS = [
     "vercel/next.js",
     "microsoft/vscode",
@@ -32,9 +31,9 @@ async def validate() -> None:
                 time.sleep(delay)
 
             owner, repo = repo_url.split("/")
-            print(f"\n{'='*70}")
+            print(f"\n{'=' * 70}")
             print(f"  {repo_url}")
-            print(f"{'='*70}")
+            print(f"{'=' * 70}")
 
             try:
                 data = await service.fetch_repository_data(owner, repo)

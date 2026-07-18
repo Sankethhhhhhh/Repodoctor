@@ -25,7 +25,9 @@ def _commit(sha: str = "a", message: str = "Add feature", author: str = "Alice")
 
 
 def _tree_node(path: str, size: int = 100, node_type: str = "blob") -> TreeNode:
-    return TreeNode(path=path, mode="100644" if node_type == "blob" else "040000", type=node_type, sha="a", size=size, url="")
+    return TreeNode(
+        path=path, mode="100644" if node_type == "blob" else "040000", type=node_type, sha="a", size=size, url=""
+    )
 
 
 def _workflow(path: str, name: str = "CI", state: str = "active") -> WorkflowFile:
@@ -532,18 +534,14 @@ class TestFrameworkScenarios:
         assert rule["status"] == "PASS"
 
     def test_jest_detected_via_config(self) -> None:
-        data = _repo(
-            tree=[_tree_node("jest.config.js"), _tree_node("tests/app.test.js")]
-        )
+        data = _repo(tree=[_tree_node("jest.config.js"), _tree_node("tests/app.test.js")])
         result = run_scoring(data)
         rule = _get_rule(result, "TEST_FRAMEWORK")
         assert rule is not None
         assert rule["status"] == "PASS"
 
     def test_cargo_test_detected(self) -> None:
-        data = _repo(
-            tree=[_tree_node("Cargo.toml"), _tree_node("tests/integration.rs")]
-        )
+        data = _repo(tree=[_tree_node("Cargo.toml"), _tree_node("tests/integration.rs")])
         result = run_scoring(data)
         rule = _get_rule(result, "TEST_FRAMEWORK")
         assert rule is not None
@@ -609,9 +607,7 @@ class TestFrameworkScenarios:
 
     def test_jest_detected_via_tests_dir(self) -> None:
         """react uses __tests__ directory without a standard jest.config at root."""
-        data = _repo(
-            tree=[_dir("__tests__"), _tree_node("__tests__/app.test.js")]
-        )
+        data = _repo(tree=[_dir("__tests__"), _tree_node("__tests__/app.test.js")])
         result = run_scoring(data)
         rule = _get_rule(result, "TEST_FRAMEWORK")
         assert rule is not None
@@ -737,11 +733,13 @@ class TestGitHygieneScenarios:
 
     def test_issue_template_yaml_in_dir_passes(self) -> None:
         """Repos with YAML issue templates in .github/ISSUE_TEMPLATE/ should pass."""
-        data = _repo(tree=[
-            _dir(".github/ISSUE_TEMPLATE"),
-            _tree_node(".github/ISSUE_TEMPLATE/bug_report.yml"),
-            _tree_node(".github/ISSUE_TEMPLATE/config.yml"),
-        ])
+        data = _repo(
+            tree=[
+                _dir(".github/ISSUE_TEMPLATE"),
+                _tree_node(".github/ISSUE_TEMPLATE/bug_report.yml"),
+                _tree_node(".github/ISSUE_TEMPLATE/config.yml"),
+            ]
+        )
         result = run_scoring(data)
         rule = _get_rule(result, "ISSUE_TEMPLATE_EXISTS")
         assert rule is not None
@@ -749,9 +747,11 @@ class TestGitHygieneScenarios:
 
     def test_issue_template_file_in_dir_passes(self) -> None:
         """Repos with files directly under .github/ISSUE_TEMPLATE/ should pass."""
-        data = _repo(tree=[
-            _tree_node(".github/ISSUE_TEMPLATE/bug_report.md"),
-        ])
+        data = _repo(
+            tree=[
+                _tree_node(".github/ISSUE_TEMPLATE/bug_report.md"),
+            ]
+        )
         result = run_scoring(data)
         rule = _get_rule(result, "ISSUE_TEMPLATE_EXISTS")
         assert rule is not None
@@ -848,7 +848,8 @@ class TestOverallScoring:
 
         lic1 = _get_cat_score(r1, "Licensing")
         lic2 = _get_cat_score(r2, "Licensing")
-        assert lic1 is not None and lic2 is not None
+        assert lic1 is not None
+        assert lic2 is not None
         assert lic1.score > lic2.score
 
     def test_ci_present_increases_ci_score(self) -> None:
@@ -867,13 +868,18 @@ class TestOverallScoring:
 
         ci1 = _get_cat_score(r1, "CI/CD")
         ci2 = _get_cat_score(r2, "CI/CD")
-        assert ci1 is not None and ci2 is not None
+        assert ci1 is not None
+        assert ci2 is not None
         assert ci1.score > ci2.score
 
     def test_security_features_improve_security_score(self) -> None:
         with_security = _repo(
             has_gitignore=True,
-            tree=[_tree_node("SECURITY.md"), _tree_node(".github/dependabot.yml"), _tree_node(".github/secret-scanning.yml")],
+            tree=[
+                _tree_node("SECURITY.md"),
+                _tree_node(".github/dependabot.yml"),
+                _tree_node(".github/secret-scanning.yml"),
+            ],
             workflows=[_workflow("codeql-analysis.yml", "CodeQL")],
         )
         without_security = _repo(has_gitignore=False, workflows=[])
@@ -883,7 +889,8 @@ class TestOverallScoring:
 
         sec1 = _get_cat_score(r1, "Security")
         sec2 = _get_cat_score(r2, "Security")
-        assert sec1 is not None and sec2 is not None
+        assert sec1 is not None
+        assert sec2 is not None
         assert sec1.score > sec2.score
 
     def test_all_findings_have_points(self) -> None:
@@ -916,12 +923,11 @@ class TestOverallScoring:
         for cat in scoring.categories:
             for finding in cat.details:
                 if finding["status"] == "FAIL":
-                    assert finding["points"] == 0, (
-                        f"{finding['rule']} failed but points={finding['points']}"
-                    )
+                    assert finding["points"] == 0, f"{finding['rule']} failed but points={finding['points']}"
 
     def test_grade_boundaries(self) -> None:
         from app.scoring.pipeline import calculate_grade
+
         assert calculate_grade(95) == "A"
         assert calculate_grade(85) == "B"
         assert calculate_grade(75) == "C"
@@ -938,7 +944,8 @@ class TestOverallScoring:
 
         doc1 = _get_cat_score(r1, "Documentation")
         doc2 = _get_cat_score(r2, "Documentation")
-        assert doc1 is not None and doc2 is not None
+        assert doc1 is not None
+        assert doc2 is not None
         assert doc1.score >= doc2.score
 
     def test_renovate_improves_security_score(self) -> None:
@@ -951,5 +958,6 @@ class TestOverallScoring:
 
         sec1 = _get_cat_score(r1, "Security")
         sec2 = _get_cat_score(r2, "Security")
-        assert sec1 is not None and sec2 is not None
+        assert sec1 is not None
+        assert sec2 is not None
         assert sec1.score > sec2.score

@@ -1,7 +1,11 @@
 from __future__ import annotations
 
-from app.github.schemas import GitHubRepositoryData
+from typing import TYPE_CHECKING
+
 from app.scoring.rule import Category, Rule, RuleResult
+
+if TYPE_CHECKING:
+    from app.github.schemas import GitHubRepositoryData
 
 README_MIN_LENGTH = 200
 README_SECTION_KEYWORDS = {
@@ -157,7 +161,8 @@ class ChangelogExistsRule(Rule):
         if data.releases and len(data.releases) >= 3:
             latest = data.releases[0].tag_name
             return self._pass(
-                f"No CHANGELOG file, but {len(data.releases)} releases found (latest: {latest}) — releases serve as changelog"
+                f"No CHANGELOG file, but {len(data.releases)} releases found"
+                f" (latest: {latest}) — releases serve as changelog"
             )
         return self._fail(
             "No CHANGELOG file or sufficient releases found",

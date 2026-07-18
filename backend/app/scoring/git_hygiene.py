@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import re
+from typing import TYPE_CHECKING
 
-from app.github.schemas import GitHubRepositoryData
 from app.scoring.rule import Category, Rule, RuleResult
+
+if TYPE_CHECKING:
+    from app.github.schemas import GitHubRepositoryData
 
 LOW_EFFORT_PATTERNS = [
     r"^update$",

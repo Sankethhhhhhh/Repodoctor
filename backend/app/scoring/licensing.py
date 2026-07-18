@@ -1,7 +1,11 @@
 from __future__ import annotations
 
-from app.github.schemas import GitHubRepositoryData
+from typing import TYPE_CHECKING
+
 from app.scoring.rule import Category, Rule, RuleResult
+
+if TYPE_CHECKING:
+    from app.github.schemas import GitHubRepositoryData
 
 LICENSE_FILE_NAMES = [
     "LICENSE",
